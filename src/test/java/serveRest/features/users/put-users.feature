@@ -30,9 +30,9 @@ Feature: Actualizar Usuarios (PUT /usuarios/{_id})
     * karate.log('Usuario actualizado correctamente con ID:', userIdCreated)
 
   @EC10 @NegativeCase
-  Scenario: Editar Usuario con email invalido
+  Scenario Outline: Editar Usuario con email invalido
     * call read('classpath:serveRest/features/users/post-users.feature@CreateUserHelper')
-    * def invalidEmail = DataGen.getInvalidEmail('DOUBLE_AT')
+    * def invalidEmail = DataGen.getInvalidEmail('<invalidEmailType>')
     * def userBody = DataGen.buildUserPayload()
     * set userBody.email = invalidEmail
 
@@ -43,6 +43,13 @@ Feature: Actualizar Usuarios (PUT /usuarios/{_id})
     * karate.log(response)
     * match response.email == '#string'
     * match response.email contains 'email deve ser um email válido'
+
+    Examples:
+    | invalidEmailType |
+    | NO_EXTENSION     |
+    | NO_AT            |
+    | NO_USERNAME      |
+    | DOUBLE_AT        |
 
   @EC11 @EdgeCase
   Scenario: Editar con id no existente creara el usuario

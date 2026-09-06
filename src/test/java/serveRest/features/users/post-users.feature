@@ -40,8 +40,8 @@ Feature: Crear Usuarios (POST /usuarios)
     * match response.message == '#string? _.includes("Este email já está sendo usado")'
 
   @EC08 @NegativeCase
-  Scenario: Crear Usuario con email invalido
-    * def invalidEmail = DataGen.getInvalidEmail('NO_EXTENSION')
+  Scenario Outline: Crear Usuario con email invalido
+    * def invalidEmail = DataGen.getInvalidEmail('<invalidEmailType>')
     * def userBody = DataGen.buildUserPayload()
     * set userBody.email = invalidEmail
   
@@ -50,3 +50,11 @@ Feature: Crear Usuarios (POST /usuarios)
     Then status 400
     * match response.email == '#string'
     * match response.email contains 'email deve ser um email válido'
+
+    Examples:
+    | invalidEmailType |
+    | NO_EXTENSION     |
+    | NO_AT            |
+    | NO_USERNAME      |
+    | DOUBLE_AT        |
+

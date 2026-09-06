@@ -143,27 +143,27 @@ mvn clean test
 Permite segmentar la ejecución por tipo de prueba o flujo:
 
 - **Por Funcionalidad en General (CRUD - 4 features):**
-  ```Shell
-  mvn test -Dkarate.options="--tags @UsersCRUD"
+  ```bash
+  mvn test "-Dkarate.options=--tags @UsersCRUD"
   ```
 - **Por Endpoint Específico (feature):**
-  ```Shell
-  mvn test -Dkarate.options="--tags @PostUsers"
-  mvn test -Dkarate.options="--tags @GetUsers"
-  mvn test -Dkarate.options="--tags @PutUsers"
-  mvn test -Dkarate.options="--tags @DeleteUsers"
-  ```  
+  ```bash
+  mvn test "-Dkarate.options=--tags @PostUsers"
+  mvn test "-Dkarate.options=--tags @GetUsers"
+  mvn test "-Dkarate.options=--tags @PutUsers"
+  mvn test "-Dkarate.options=--tags @DeleteUsers"
+  ```
 - **Solo Casos Felices (Happy Path):**
   ```bash
-  mvn test -Dkarate.options="--tags @HappyPath"
+  mvn test "-Dkarate.options=--tags @HappyPath"
   ```
 - **Solo Casos Negativos:**
   ```bash
-  mvn test -Dkarate.options="--tags @NegativeCase"
+  mvn test "-Dkarate.options=--tags @NegativeCase"
   ```
 - **Solo Casos Borde (Edge Cases):**
   ```bash
-  mvn test -Dkarate.options="--tags @EdgeCase"
+  mvn test "-Dkarate.options=--tags @EdgeCase"
   ```
 
 ### 3. Configuración Dinámica de Hilos (Threads)
