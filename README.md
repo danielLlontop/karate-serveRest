@@ -12,7 +12,7 @@ El proyecto está diseñado bajo estándares de calidad empresarial: validación
 
 ---
 
-## 🚀 Guía Rápida para el Evaluador (Quick Start)
+## 🚀 Guía Rápida de Inicio (Quick Start)
 
 Para clonar y ejecutar toda la suite de pruebas en menos de 2 minutos:
 
@@ -35,13 +35,13 @@ start target/karate-reports/karate-summary.html
 
 La suite cubre al 100% las historias de usuario y criterios de aceptación solicitados para el recurso `/usuarios`, ejecutando **21 escenarios de prueba**:
 
-| Endpoint | Feature / Tag | Tipo | Descripción y Validaciones Clave |
-|---|---|---|---|
-| `GET /usuarios` | `get-users.feature`<br>`@EC01 @EC02` | Happy Path | 1. Listado general de usuarios, validación de contrato `users-list.schema.json` y conteo de registros (`quantidade`).<br>2. Filtrado por query param (`administrador=true`) verificando que cada item cumpla la condición. |
-| `GET /usuarios/{_id}` | `get-users.feature`<br>`@EC03 - @EC05` | Happy Path / Negative | 1. Consulta por ID existente con esquema `user-info.schema.json`.<br>2. ID inexistente (`400 Bad Request` - `Usuário não encontrado`).<br>3. ID con longitud inválida distinta a 16 caracteres (`400 Bad Request`). |
-| `POST /usuarios` | `post-users.feature`<br>`@EC06 - @EC08` | Happy Path / Negative | 1. Registro exitoso con payload dinámico generado por Datafaker (`201 Created`).<br>2. Intento de registro con email duplicado (`400 Bad Request`).<br>3. Parametrización (Scenario Outline) de emails inválidos (sin arroba, sin extensión, sin usuario, doble arroba). |
-| `PUT /usuarios/{_id}` | `put-users.feature`<br>`@EC09 - @EC12` | Happy Path / Edge Cases | 1. Actualización de datos de usuario existente (`200 OK`).<br>2. Validación de emails inválidos en actualización (Scenario Outline).<br>3. Comportamiento **Upsert**: creación de usuario cuando el ID no existe (`201 Created`).<br>4. Bloqueo de Upsert si el email coincide con otro usuario ya registrado (`400 Bad Request`). |
-| `DELETE /usuarios/{_id}` | `delete-users.feature`<br>`@EC13 - @EC15` | Happy Path / Edge Cases | 1. Eliminación exitosa de usuario aprovisionado dinámicamente (`200 OK`).<br>2. **Idempotencia**: intento de eliminar ID inexistente (`200 OK` - `Nenhum registro excluído`).<br>3. **Integridad referencial**: bloqueo de eliminación si el usuario posee un carrito de compras activo (`400 Bad Request`). |
+| Endpoint                   | Feature / Tag                         | Tipo                    | Descripción y Validaciones Clave                                                                                                                                                                                                                                                                                                       |
+| -------------------------- | ------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /usuarios`          | `get-users.feature@EC01 @EC02`      | Happy Path              | 1. Listado general de usuarios, validación de contrato`users-list.schema.json` y conteo de registros (`quantidade`).2. Filtrado por query param (`administrador=true`) verificando que cada item cumpla la condición.                                                                                                           |
+| `GET /usuarios/{_id}`    | `get-users.feature@EC03 - @EC05`    | Happy Path / Negative   | 1. Consulta por ID existente con esquema`user-info.schema.json`.2. ID inexistente (`400 Bad Request` - `Usuário não encontrado`).3. ID con longitud inválida distinta a 16 caracteres (`400 Bad Request`).                                                                                                                   |
+| `POST /usuarios`         | `post-users.feature@EC06 - @EC08`   | Happy Path / Negative   | 1. Registro exitoso con payload dinámico generado por Datafaker (`201 Created`).2. Intento de registro con email duplicado (`400 Bad Request`).3. Parametrización (Scenario Outline) de emails inválidos (sin arroba, sin extensión, sin usuario, doble arroba).                                                                |
+| `PUT /usuarios/{_id}`    | `put-users.feature@EC09 - @EC12`    | Happy Path / Edge Cases | 1. Actualización de datos de usuario existente (`200 OK`).2. Validación de emails inválidos en actualización (Scenario Outline).3. Comportamiento **Upsert**: creación de usuario cuando el ID no existe (`201 Created`).4. Bloqueo de Upsert si el email coincide con otro usuario ya registrado (`400 Bad Request`). |
+| `DELETE /usuarios/{_id}` | `delete-users.feature@EC13 - @EC15` | Happy Path / Edge Cases | 1. Eliminación exitosa de usuario aprovisionado dinámicamente (`200 OK`).2. **Idempotencia**: intento de eliminar ID inexistente (`200 OK` - `Nenhum registro excluído`).3. **Integridad referencial**: bloqueo de eliminación si el usuario posee un carrito de compras activo (`400 Bad Request`).            |
 
 ---
 
@@ -127,19 +127,19 @@ start target/karate-reports/karate-summary.html
 
 ## ⌨️ Comandos de Ejecución con Maven
 
-| Comando | Descripción |
-|---|---|
-| `mvn clean test` | Ejecuta **toda la suite de pruebas** en paralelo. |
-| `mvn test "-Dkarate.options=--tags @UsersCRUD"` | Ejecuta todas las operaciones CRUD de Usuarios. |
-| `mvn test "-Dkarate.options=--tags @GetUsers"` | Ejecuta únicamente los escenarios de consulta (`GET`). |
-| `mvn test "-Dkarate.options=--tags @PostUsers"` | Ejecuta únicamente los escenarios de creación (`POST`). |
-| `mvn test "-Dkarate.options=--tags @PutUsers"` | Ejecuta únicamente los escenarios de edición/upsert (`PUT`). |
-| `mvn test "-Dkarate.options=--tags @DeleteUsers"` | Ejecuta únicamente los escenarios de eliminación (`DELETE`). |
-| `mvn test "-Dkarate.options=--tags @HappyPath"` | Filtra y ejecuta exclusivamente escenarios exitosos. |
-| `mvn test "-Dkarate.options=--tags @NegativeCase"` | Filtra y ejecuta exclusivamente escenarios negativos de error. |
-| `mvn test "-Dkarate.options=--tags @EdgeCase"` | Filtra y ejecuta casos borde (upsert, idempotencia). |
-| `mvn test -Dthreads=4` | Ajusta la cantidad de hilos de ejecución concurrente en paralelo. |
-| `mvn test -Dkarate.env=dev` | Selecciona el ambiente de ejecución (`dev`, `qa`, `local`). |
+| Comando                                              | Descripción                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| `mvn clean test`                                   | Ejecuta**toda la suite de pruebas** en paralelo.             |
+| `mvn test "-Dkarate.options=--tags @UsersCRUD"`    | Ejecuta todas las operaciones CRUD de Usuarios (4 features)).      |
+| `mvn test "-Dkarate.options=--tags @GetUsers"`     | Ejecuta únicamente los escenarios de consulta (`GET`).          |
+| `mvn test "-Dkarate.options=--tags @PostUsers"`    | Ejecuta únicamente los escenarios de creación (`POST`).        |
+| `mvn test "-Dkarate.options=--tags @PutUsers"`     | Ejecuta únicamente los escenarios de edición/upsert (`PUT`).   |
+| `mvn test "-Dkarate.options=--tags @DeleteUsers"`  | Ejecuta únicamente los escenarios de eliminación (`DELETE`).   |
+| `mvn test "-Dkarate.options=--tags @HappyPath"`    | Filtra y ejecuta exclusivamente escenarios exitosos.               |
+| `mvn test "-Dkarate.options=--tags @NegativeCase"` | Filtra y ejecuta exclusivamente escenarios negativos de error.     |
+| `mvn test "-Dkarate.options=--tags @EdgeCase"`     | Filtra y ejecuta casos borde (upsert, idempotencia).               |
+| `mvn test -Dthreads=4`                             | Ajusta la cantidad de hilos de ejecución concurrente en paralelo. |
+| `mvn test -Dkarate.env=dev`                        | Selecciona el ambiente de ejecución (`dev`, `qa`, `local`). |
 
 ---
 
