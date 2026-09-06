@@ -24,6 +24,7 @@ Feature: Listar Usuarios (GET /usuarios/ - /usuarios/{_id})
     * match response == userListSchema
     # Obtenemos todos los usuarios
     * def allUsers = get response.usuarios
+    * match allUsers == '#[response.quantidade]' 
     # Seleccionamos un usuario de manera aleatoria
     * def selectedUser = utils.getRandomItem(allUsers)
     * karate.log('Usuario seleccionado:', selectedUser)
