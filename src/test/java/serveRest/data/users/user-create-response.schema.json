@@ -1,0 +1,4 @@
+{
+  "message": "#string",
+  "_id": "#regex ^[a-zA-Z0-9]{16}$"
+}
