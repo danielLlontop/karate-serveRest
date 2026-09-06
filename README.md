@@ -1,200 +1,150 @@
-# 🚀 ServeRest API Automation Suite - Karate DSL
+# Suite de Automatización API — ServeRest
 
-Suite de pruebas automatizadas end-to-end para la **API de Gestión de Usuarios de ServeRest** ([https://serverest.dev/](https://serverest.dev/)), desarrollada con **Karate DSL**.
+[![Karate DSL](https://img.shields.io/badge/Karate_DSL-1.5.2-ff6b6b.svg?logo=karate)](https://github.com/karatelabs/karate)
+[![Java](https://img.shields.io/badge/Java-21-007396.svg?logo=openjdk)](https://www.oracle.com/java/)
+[![Maven](https://img.shields.io/badge/Apache_Maven-3.9+-c71a36.svg?logo=apachemaven)](https://maven.apache.org/)
+[![JUnit 5](https://img.shields.io/badge/JUnit-5-25a162.svg?logo=junit5)](https://junit.org/junit5/)
+[![Datafaker](https://img.shields.io/badge/Datafaker-2.2.2-blue.svg)](https://www.datafaker.net/)
 
----
+Suite integral de pruebas automatizadas Backend (API Testing) para la **API de Gestión de Usuarios de ServeRest** ([https://serverest.dev/](https://serverest.dev/)), desarrollada con **Karate DSL**, **Java 21**, **Datafaker** y **Apache Maven**.
 
-## 📋 Tabla de Contenidos
-
-1. [Objetivo del Proyecto](#-objetivo-del-proyecto)
-2. [Stack Tecnológico](#-stack-tecnológico)
-3. [Arquitectura del Proyecto](#-arquitectura-del-proyecto)
-4. [Estrategia de Automatización y Patrones](#-estrategia-de-automatización-y-patrones-utilizados)
-5. [Hallazgos y Escenarios Adicionales Descubiertos](#-hallazgos-y-escenarios-adicionales-descubiertos)
-6. [Prerrequisitos y Configuración](#-prerrequisitos-y-configuración)
-7. [Comandos de Ejecución](#-comandos-de-ejecución)
-8. [Reportes de Ejecución](#-reportes-de-ejecución)
+El proyecto está diseñado bajo estándares de calidad empresarial: validación estricta de esquemas JSON (Contract Testing), generación dinámica de datos de prueba con patrón Data Factory, aislamiento total de escenarios para ejecución concurrente y cobertura exhaustiva de operaciones CRUD, casos borde y reglas de integridad referencial.
 
 ---
 
-## 🎯 Objetivo del Proyecto
+## 🚀 Guía Rápida para el Evaluador (Quick Start)
 
-Construir una solución robusta, escalable y mantenible para validar las operaciones CRUD sobre el recurso `/usuarios` de la API de ServeRest, cubriendo:
+Para clonar y ejecutar toda la suite de pruebas en menos de 2 minutos:
 
-- Listado general y filtrado de usuarios (`GET /usuarios`).
-- Creación de usuarios (`POST /usuarios`).
-- Consulta individual por identificador (`GET /usuarios/{_id}`).
-- Actualización y Upsert de usuarios (`PUT /usuarios/{_id}`).
-- Eliminación de usuarios (`DELETE /usuarios/{_id}`).
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/danielLlontop/karate-serveRest.git
+cd karate-serveRest
 
----
+# 2. Ejecutar la suite completa en paralelo con Maven
+mvn clean test
 
-## 🛠️ Stack Tecnológico
-
-- **Framework de Pruebas:** [Karate DSL](https://github.com/karatelabs/karate) `1.5.2`
-- **Lenguaje Base:** Java `21`
-- **Gestor de Dependencias / Build:** Apache Maven `3.9+`
-- **Motor de Datos de Prueba:** [Datafaker](https://www.datafaker.net/) `2.2.2` (Localizado en Español)
-- **Motor de Ejecución:** JUnit 5
-- **Reportería:** Karate Built-in HTML Reports
+# 3. Abrir el reporte interactivo de Karate en el navegador
+# En Windows (PowerShell / CMD):
+start target/karate-reports/karate-summary.html
+```
 
 ---
 
-## 📂 Arquitectura del Proyecto
+## 🎯 Alcance y Escenarios Automatizados
 
-El proyecto sigue una arquitectura modular orientada a la separación de responsabilidades y cumplimiento de especificaciones por endpoint:
+La suite cubre al 100% las historias de usuario y criterios de aceptación solicitados para el recurso `/usuarios`, ejecutando **21 escenarios de prueba**:
+
+| Endpoint | Feature / Tag | Tipo | Descripción y Validaciones Clave |
+|---|---|---|---|
+| `GET /usuarios` | `get-users.feature`<br>`@EC01 @EC02` | Happy Path | 1. Listado general de usuarios, validación de contrato `users-list.schema.json` y conteo de registros (`quantidade`).<br>2. Filtrado por query param (`administrador=true`) verificando que cada item cumpla la condición. |
+| `GET /usuarios/{_id}` | `get-users.feature`<br>`@EC03 - @EC05` | Happy Path / Negative | 1. Consulta por ID existente con esquema `user-info.schema.json`.<br>2. ID inexistente (`400 Bad Request` - `Usuário não encontrado`).<br>3. ID con longitud inválida distinta a 16 caracteres (`400 Bad Request`). |
+| `POST /usuarios` | `post-users.feature`<br>`@EC06 - @EC08` | Happy Path / Negative | 1. Registro exitoso con payload dinámico generado por Datafaker (`201 Created`).<br>2. Intento de registro con email duplicado (`400 Bad Request`).<br>3. Parametrización (Scenario Outline) de emails inválidos (sin arroba, sin extensión, sin usuario, doble arroba). |
+| `PUT /usuarios/{_id}` | `put-users.feature`<br>`@EC09 - @EC12` | Happy Path / Edge Cases | 1. Actualización de datos de usuario existente (`200 OK`).<br>2. Validación de emails inválidos en actualización (Scenario Outline).<br>3. Comportamiento **Upsert**: creación de usuario cuando el ID no existe (`201 Created`).<br>4. Bloqueo de Upsert si el email coincide con otro usuario ya registrado (`400 Bad Request`). |
+| `DELETE /usuarios/{_id}` | `delete-users.feature`<br>`@EC13 - @EC15` | Happy Path / Edge Cases | 1. Eliminación exitosa de usuario aprovisionado dinámicamente (`200 OK`).<br>2. **Idempotencia**: intento de eliminar ID inexistente (`200 OK` - `Nenhum registro excluído`).<br>3. **Integridad referencial**: bloqueo de eliminación si el usuario posee un carrito de compras activo (`400 Bad Request`). |
+
+---
+
+## 🏗 Arquitectura del Proyecto
+
+El proyecto sigue una estructura limpia, modular y desacoplada respetando las convenciones de Karate DSL y Maven:
 
 ```text
 karate-ServeRest/
-├── src/test/java/
-│   ├── env-config.json                   # Configuración de ambientes (dev, local, qa)
-│   ├── karate-config.js                  # Setup global (headers, timeouts, logs)
-│   ├── logback-test.xml                  # Configuración de logs de ejecución
-│   ├── utils/
-│   │   └── DataGenerator.java            # Factory pattern para payloads y datos dinámicos
-│   └── serveRest/
-│       ├── RunnerTest.java               # Runner paralelo principal para Maven / CI
-│       ├── data/
-│       │   └── users/                    # Esquemas de contrato JSON
-│       │       ├── user-info.schema.json
-│       │       ├── users-list.schema.json
-│       │       └── user-create-response.schema.json
-│       └── features/
-│           ├── carts/
-│           │   ├── carts.feature         # Helper de carritos para pruebas de dependencias
-│           │   └── CartsRunner.java      # Runner JUnit específico de carritos
-│           ├── common/
-│           │   └── common-utils.feature  # Funciones utilitarias JS compartidas
-│           └── users/
-│               ├── get-users.feature     # Escenarios GET (Listado y por ID)
-│               ├── post-users.feature    # Escenarios POST (Creación y validaciones)
-│               ├── put-users.feature     # Escenarios PUT (Actualización y Upsert)
-│               ├── delete-users.feature  # Escenarios DELETE (Eliminación e integridad)
-│               └── UsersRunner.java      # Runner JUnit específico para módulo Usuarios
-├── pom.xml                               # Configuración de dependencias y plugins Maven
-└── README.md                             # Documentación técnica y guía de ejecución
+├── pom.xml                               # Dependencias (Karate 1.5.2, Datafaker, JUnit 5)
+├── README.md                             # Guía principal de uso e instalación
+├── ESTRATEGIA.md                         # Informe técnico de arquitectura y patrones (Entregable 3)
+└── src/test/java/
+    ├── env-config.json                   # Configuración de URLs por ambiente (dev, local, qa)
+    ├── karate-config.js                  # Inicialización global (timeouts, headers, setup)
+    ├── logback-test.xml                  # Configuración de niveles de log en consola y archivo
+    ├── utils/
+    │   └── DataGenerator.java            # Data Factory Pattern con Datafaker (Español)
+    └── serveRest/
+        ├── RunnerTest.java               # Runner principal JUnit 5 para ejecución en paralelo
+        ├── data/
+        │   └── users/                    # Contratos de Esquemas JSON
+        │       ├── user-info.schema.json
+        │       ├── users-list.schema.json
+        │       └── user-create-response.schema.json
+        └── features/
+            ├── carts/
+            │   ├── carts.feature         # Helper de carritos para pruebas de integridad referencial
+            │   └── CartsRunner.java      # Runner JUnit específico para carritos
+            ├── common/
+            │   └── common-utils.feature  # Funciones utilitarias JS reutilizables
+            └── users/                    # Especificaciones BDD por endpoint CRUD
+                ├── get-users.feature     # Escenarios GET (Listado general y por ID)
+                ├── post-users.feature    # Escenarios POST (Creación y validaciones)
+                ├── put-users.feature     # Escenarios PUT (Actualización y Upsert)
+                ├── delete-users.feature  # Escenarios DELETE (Eliminación e integridad)
+                └── UsersRunner.java      # Runner JUnit modular para Usuarios
 ```
 
 ---
 
-## 🧠 Estrategia de Automatización y Patrones Utilizados
+## 💡 Aspectos Técnicos Destacados para la Evaluación
 
-### 1. Principio DRY (Don't Repeat Yourself) & Data Factory Pattern
-
-- Se implementó `DataGenerator.java` con el patrón **Factory** (`buildUserPayload()`) que genera mapas de datos listos para ser transformados a JSON por Karate.
-
-### 2. Aislamiento e Independencia de Pruebas (Self-Contained Dynamic Data)
-
-- **Cero dependencia del orden de ejecución:** Los escenarios de `PUT` y `DELETE` no asumen la existencia de registros previos en la base de datos pública ni borran usuarios de otros flujos.
-- Utilizan helpers modulares (`@CreateUserHelper`) para aprovisionar su propia data previa en tiempo de ejecución, eliminando falsos positivos (*flaky tests*) durante la ejecución concurrente en paralelo.
-
-### 3. Validación de Contratos y Esquemas (Contract Testing)
-
-- Cada respuesta es validada rigurosamente contra esquemas JSON (`.schema.json`) centralizados.
-- Se valida la integridad estructural, tipos de datos y reglas de negocio complejas mediante expresiones regulares (para IDs alfanuméricos de 16 caracteres, expresiones de email y booleanos).
-
-### 4. Inyección Global de Configuración
-
-- Los headers estándar (`Accept: application/json`), timeouts de conexión/lectura y opciones de prettify de peticiones se gestionan de manera centralizada en `karate-config.js`, desacoplando la infraestructura de la lógica de negocio de los `.feature`.
+1. **Data Factory Pattern con Datafaker (`DataGenerator.java`):**
+   * Desacoplamiento total de datos quemados (*hardcoded*). Utiliza `net.datafaker.Faker` configurado en idioma español (`Locale.of("es")`) para producir nombres, emails seguros, contraseñas robustas y roles aleatorios en cada petición.
+2. **Aislamiento Total e Independencia de Pruebas (Zero Flaky Tests):**
+   * Ningún escenario depende del estado previo de la base de datos pública. Los escenarios de `PUT` y `DELETE` aprovisionan su propio registro en tiempo de ejecución utilizando el helper modular `@CreateUserHelper`, asegurando que las pruebas corran en cualquier orden y en paralelo sin colisiones.
+3. **Contract Testing con Validación Estricta de Esquemas JSON:**
+   * Todas las respuestas exitosas y de listado se validan contra archivos `.schema.json` externos mediante `match response == schema`.
+   * Incluye expresiones regulares estrictas (e.g. IDs alfanuméricos de 16 caracteres: `'#regex ^[a-zA-Z0-9]{16}$'`).
+4. **Pruebas Parametrizadas (Data-Driven Testing con `Scenario Outline`):**
+   * Validación sistemática de sintaxis de email en `POST` y `PUT` probando casos borde: sin extensión (`user@domain`), sin arroba (`userdomain.com`), sin nombre de usuario (`@domain.com`) y con doble arroba (`user@@domain.com`).
+5. **Manejo de Reglas de Negocio Avanzadas y Casos Borde:**
+   * **Comportamiento Upsert:** Validación de creación dinámica cuando no existe el ID en `PUT`.
+   * **Idempotencia:** Verificación del estándar REST donde `DELETE` sobre recurso no existente responde `200 OK`.
+   * **Integridad Referencial:** Uso de `carts.feature` para interceptar usuarios con carritos activos y comprobar el bloqueo de eliminación con `400 Bad Request`.
+6. **Ejecución Paralela de Alto Rendimiento:**
+   * Configuración concurrente con JUnit 5 Runner (`RunnerTest.java`). Los 21 escenarios se completan en aproximadamente **10 a 11 segundos**.
 
 ---
 
-## 🔍 Hallazgos y Escenarios Adicionales Descubiertos
+## 📊 Reportes y Trazabilidad (Observabilidad)
 
-Durante el análisis exploratorio y diseño de cobertura de la API, se identificaron comportamientos y reglas de negocio críticas no explícitas en el requerimiento básico, las cuales fueron cubiertas mediante escenarios dedicados:
+Karate genera automáticamente un reporte HTML interactivo con el registro exacto de cabeceras HTTP, cuerpos de petición/respuesta y tiempos de latencia por petición:
 
-| Escenario      | Endpoint                   | Tipo                 | Hallazgo / Comportamiento Validado                                                                                                                                                                                                                                                                    |
-| -------------- | -------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **EC05** | `GET /usuarios/{_id}`    | Negative             | **Validación de longitud de ID:** La API rechaza IDs que no tengan exactamente 16 caracteres alfanuméricos retornando `400 Bad Request` y mensaje descriptivo `id deve ter exatamente 16 caracteres alfanuméricos`.                                                                      |
-| **EC08** | `POST /usuarios`         | Negative             | **Validación estricta de sintaxis de Email:** Pruebas con correos sin extensión, sin arroba o caracteres duplicados retornan `400 Bad Request` con mensaje de validación correspondiente.                                                                                                  |
-| **EC12** | `PUT /usuarios/{_id}`    | Edge Case            | **Upsert con colisión de unicidad:** Al realizar `PUT` con un ID inexistente, la API intenta crear el registro (Upsert); sin embargo, si el email ya pertenece a otro usuario registrado, la API bloquea la creación retornando `400 Bad Request` (`Este email já está sendo usado`). |
-| **EC14** | `DELETE /usuarios/{_id}` | Edge Case            | **Idempotencia en Eliminación:** Intentar eliminar un ID inexistente no genera error 404, sino que responde `200 OK` con el mensaje informativo `Nenhum registro excluído`, respetando la naturaleza idempotente del método DELETE en esta API.                                          |
-| **EC15** | `DELETE /usuarios/{_id}` | Negative / Integrity | **Integridad Referencial con Carritos:** No se permite eliminar usuarios que tengan un carrito de compras asociado (`400 Bad Request`). Se utiliza `carts.feature` dinámicamente para localizar usuarios bloqueados por carritos activos.                                                  |
-
----
-
-## ⚙️ Prerrequisitos y Configuración
-
-- **Java JDK:** Versión 21 instalada y configurada en el `PATH` (`JAVA_HOME`).
-- **Maven:** Versión 3.9 o superior.
-- **Conexión a Internet:** Para conectarse al entorno público `https://serverest.dev`.
-
-Verificar versiones instaladas:
-
-```bash
-java -version
-mvn -version
-```
-
----
-
-## 🚀 Comandos de Ejecución
-
-### 1. Ejecución de la Suite Completa en Paralelo
-
-Ejecuta todos los escenarios de prueba utilizando el runner optimizado JUnit 5:
-
-```bash
-mvn clean test
-```
-
-### 2. Ejecución por Tags (Filtrado de Pruebas)
-
-Permite segmentar la ejecución por tipo de prueba o flujo:
-
-- **Por Funcionalidad en General (CRUD - 4 features):**
-  ```bash
-  mvn test "-Dkarate.options=--tags @UsersCRUD"
-  ```
-- **Por Endpoint Específico (feature):**
-  ```bash
-  mvn test "-Dkarate.options=--tags @PostUsers"
-  mvn test "-Dkarate.options=--tags @GetUsers"
-  mvn test "-Dkarate.options=--tags @PutUsers"
-  mvn test "-Dkarate.options=--tags @DeleteUsers"
-  ```
-- **Solo Casos Felices (Happy Path):**
-  ```bash
-  mvn test "-Dkarate.options=--tags @HappyPath"
-  ```
-- **Solo Casos Negativos:**
-  ```bash
-  mvn test "-Dkarate.options=--tags @NegativeCase"
-  ```
-- **Solo Casos Borde (Edge Cases):**
-  ```bash
-  mvn test "-Dkarate.options=--tags @EdgeCase"
-  ```
-
-### 3. Configuración Dinámica de Hilos (Threads)
-
-Configura el número de hilos de ejecución concurrente según las capacidades de la máquina o pipeline:
-
-```bash
-mvn test -Dthreads=4
-```
-
-### 4. Ejecución por Ambiente
-
-Soporte para múltiples ambientes configurados en `env-config.json` (por defecto `dev`):
-
-```bash
-mvn test -Dkarate.env=dev
-```
-
----
-
-## 📊 Reportes de Ejecución
-
-Una vez concluida la ejecución, Karate genera automáticamente reportes HTML interactivos con el detalle paso a paso, tiempos de respuesta y payloads de cada petición:
-
-- **Reporte Resumen (HTML):**
+* **Reporte Resumen (HTML):**
   ```text
   target/karate-reports/karate-summary.html
   ```
-- **Reporte Detallado por Feature:**
+* **Reporte Detallado por Endpoint:**
   ```text
   target/karate-reports/serveRest.features.users.[get|post|put|delete]-users.html
   ```
 
-> 💡 **Tip para visualizar:** Abre el archivo `target/karate-reports/karate-summary.html` en cualquier navegador web (Chrome, Edge, Firefox) para revisar el informe visual de métricas y trazabilidad de las pruebas.
+Para abrir el reporte tras finalizar:
+
+```bash
+# En Windows PowerShell / CMD:
+start target/karate-reports/karate-summary.html
+```
+
+---
+
+## ⌨️ Comandos de Ejecución con Maven
+
+| Comando | Descripción |
+|---|---|
+| `mvn clean test` | Ejecuta **toda la suite de pruebas** en paralelo. |
+| `mvn test "-Dkarate.options=--tags @UsersCRUD"` | Ejecuta todas las operaciones CRUD de Usuarios. |
+| `mvn test "-Dkarate.options=--tags @GetUsers"` | Ejecuta únicamente los escenarios de consulta (`GET`). |
+| `mvn test "-Dkarate.options=--tags @PostUsers"` | Ejecuta únicamente los escenarios de creación (`POST`). |
+| `mvn test "-Dkarate.options=--tags @PutUsers"` | Ejecuta únicamente los escenarios de edición/upsert (`PUT`). |
+| `mvn test "-Dkarate.options=--tags @DeleteUsers"` | Ejecuta únicamente los escenarios de eliminación (`DELETE`). |
+| `mvn test "-Dkarate.options=--tags @HappyPath"` | Filtra y ejecuta exclusivamente escenarios exitosos. |
+| `mvn test "-Dkarate.options=--tags @NegativeCase"` | Filtra y ejecuta exclusivamente escenarios negativos de error. |
+| `mvn test "-Dkarate.options=--tags @EdgeCase"` | Filtra y ejecuta casos borde (upsert, idempotencia). |
+| `mvn test -Dthreads=4` | Ajusta la cantidad de hilos de ejecución concurrente en paralelo. |
+| `mvn test -Dkarate.env=dev` | Selecciona el ambiente de ejecución (`dev`, `qa`, `local`). |
+
+---
+
+## 👤 Autor
+
+* **Daniel Llontop** — QA Automation Engineer
+* **Email:** danielalama64@gmail.com
+* **Documento de Estrategia Técnica:** Consulta [ESTRATEGIA.md](ESTRATEGIA.md) para conocer el análisis de decisiones de diseño, patrones de arquitectura de API y gestión de riesgos.
