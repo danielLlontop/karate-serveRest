@@ -11,13 +11,13 @@ Feature: Listar Usuarios (GET /usuarios/ - /usuarios/{_id})
     * path 'usuarios'
     #Setup de utilidades
     * def userInfoSchema = read('classpath:serveRest/data/users/user-info.schema.json')
+    * def userListSchema = read('classpath:serveRest/data/users/users-list.schema.json')
 
     # ----- Listar Usuarios (Get All) -----#
 
     @EC01 @HappyPath @GetUserHelper
   Scenario: Listar todos los usuarios registrados
     * def utils = call read('classpath:serveRest/features/common/common-utils.feature')
-    * def userListSchema = read('classpath:serveRest/data/users/users-list.schema.json')
     When method get
     Then status 200
     * karate.log(response)
@@ -40,7 +40,8 @@ Feature: Listar Usuarios (GET /usuarios/ - /usuarios/{_id})
     When method get
     Then status 200
     * karate.log(response)
-    * match response.usuarios == '#[] #(userInfoSchema)'
+    * match response == userListSchema
+    * match response.usuarios == '#[response.quantidade]' 
     * match each response.usuarios[*].administrador == 'true'
 
   # ----- Obtener un unico Usuario por ID (Get Single ID) -----#
